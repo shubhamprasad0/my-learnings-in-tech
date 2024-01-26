@@ -1,12 +1,5 @@
 import functools
 
-def do_twice(func):
-    def wrapper(*args, **kwargs):
-        func(*args, **kwargs)
-        func(*args, **kwargs)
-
-    return wrapper
-
 def count_calls(func):
     '''
     This decorator counts how many times its decorated function is called
@@ -19,3 +12,20 @@ def count_calls(func):
 
     wrapper.count = 0
     return wrapper
+
+@count_calls
+def say_hello(name):
+    print(f"Hello, {name}!")
+
+@count_calls
+def say_bye(name):
+    print(f"Bye, {name}!")
+
+say_hello("Shubham")
+say_hello("John")
+say_hello("Doe")
+
+
+say_bye("Shubham")
+say_bye("John")
+say_bye("Doe")
