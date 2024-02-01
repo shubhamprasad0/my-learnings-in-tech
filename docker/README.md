@@ -38,3 +38,43 @@
 ## Docker Compose
 - used to manage a collection of containers which are used together in an application
 - docker-compose will create a common network for the containers configured in the compose file
+- Docs: https://docs.docker.com/compose/compose-file/
+
+## Dockerfile
+- Blueprint for creating docker images
+- Docs: https://docs.docker.com/engine/reference/builder/
+
+## Docker build
+- `docker build -t <image_name>:<image_version> <path_of_Dockerfile>`
+
+## Docker Volumes
+- Persist data for containers; otherwise data gets lost when we stop the container
+- Volume is a physical host file system location, which is mounted into the virtual file system of docker containers
+- 3 Volume Types:-
+  - **Host Volumes:-**
+    - `docker run -v <host_path>:<container_path>` 
+    - E.g. `docker run -v /home/mount/data:/var/lib/mysql/data`
+    - You decide where on the host file system the reference is made
+  - **Anonymous Volumes:-**
+    - `docker run -v <container_path>`
+    - E.g. `docker run -v /var/lib/mysql/data`
+    - For each container, a directory is generated on the host by docker and automatically mounted
+  - **Named Volumes:-**
+    - `docker run -v <volume_name>:<container_path>`
+    - E.g. `docker run -v mysqlvolume:/var/lib/mysql/data`
+    - Similar to anonymous volumes as this is also created automatically by docker
+    - Different as in we can specify a name for the volume, so it is no longer anonymous
+    - We can reference the volume by name
+    - Mostly used; should be used in production
+- In Docker Compose:-
+  ```yaml
+  version: '3'
+  services:
+    mysql:
+        image: mysql
+        ...
+        volumes:
+            - db-data:/var/lib/mysql/data # same format as docker run commands above can be used; volume definition below
+  volumes: # define all the volumes
+    db-data
+  ```
