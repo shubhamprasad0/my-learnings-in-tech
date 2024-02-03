@@ -105,7 +105,7 @@
 
 ### Basic kubectl commands
 
-- `kubectl get <component>`, where `<component>` can be any kubenetes component like pod, deployment, service, replicaset, etc.
+- `kubectl get <component>`, where `<component>` can be any kubenetes component like nodes, pod, deployment, service, replicaset, etc.
 - `kubectl create deployment <deployment_name> --image=<image>` -- create deployments, which is a blueprint for creating pods. When we create a deployment, it creates a replicaset, which manages replicas of our pods.
   - The hierarchy of abstraction is:-
     - Deployment
@@ -118,4 +118,62 @@
 - `kubectl describe pod <pod_name>` -- Shows details about the pod, along with the state changes happening. Useful to debug a pod.
 - `kubectl exec -ti <pod_name> -- /bin/sh` -- To get an interactive terminal inside the pod. Also useful in debugging a pod.
 - `kubectl delete deployment <deployment_name>` -- Delete a deployment
-- `kubectl apply -f <filepath>` -- Applies a kubernetes configuration file. A configuration file is used to create and manage components inside kubernetes. It is impractical to create components using the command line options, so a configuration file is used to configure all kubernetes components.
+- `kubectl apply -f <filepath>` -- Applies a kubernetes configuration file. A configuration file is used to create and manage components inside kubernetes. It is impractical to create components using the command line options, so a configuration file is used to configure all kubernetes components. For example, `kubectl apply -f 01-nginx-deployment.yaml`.
+- `kubectl delete -f <filepath>` -- Delete kubernetes components using configuration file.
+
+## Kubernetes Configuration Files
+
+- Every k8s configuration file has 3 sections:-
+  1. metadata
+  2. spec
+  3. status
+- Every configuration file defines an apiVersion and a Kind, which is specific to each component and needs to be looked up in docs.
+- metadata defines the name, labels, etc. of the component.
+- spec defines the desired state of the component and differs for each component.
+- status is added automatically by kubernetes when the component is created, and is automatically updated to keep track of the current status.
+- kubernetes uses the status and compares it with the spec to know if there is something to do. In case there is a mismatch between the desired state and the actual state, kubernetes tries to fix it.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.24
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+
+```
+
+- Above is an example of configuration file for a deployment. We can see that it has the 2 sections, `metadata` and `spec`. Inside the spec of a deployment, there's a `template` section, which defines the configuration for a pod. It also has the metadata and spec sections. It is like a configuration file inside of a configuration file.
+
+- The metadata defines labels. These are key value pairs used to annotate components, which are used by other components to find their relevant components using selectors.
+- For example, the deployment defines a label `app: nginx`, which can be used in the selector of a service to match this label. Similarly, inside the template section, we see that the label `app: nginx` is defined for each pod, and the selector in spec of the deployment specifies to match label `app: nginx`. This is how the deployment will know which pods belong to it.
+
+## MongoDB and Mongo Express Application deployment
+
+- The configuration files are [here](/kubernetes/demo-mongodb-and-mongoexpress/).
+- The architecture of the application is as follows:-
+  - We create a `mongodb-deployment` which has mongodb pod running inside it.
+  - We create an internal service (by default all services are internal) called `mongodb-service`. This service forwards requests from mongoexpress pod to mongodb pod.
+  - We create a secret to hold mongodb credentials. This secret is used in the mongodb deployment configuration file.
+  - We create a deployment, `mongoexpress-deployment`, which deploys the mongo-express pods.
+  - We create a configmap, `mongoexpress-config`, which holds the mongodb url, to which mongo-express will connect. This configmap is also referenced in the mongoexpress-deployment configuration file.
+  - We create an external service (a service of type LoadBalancer), `mongoexpress-service`. This service is assigned a node IP address and a node port, through which this service can be accessed from outside the kubernetes cluster. Since minikube works a bit differently, we have to run `minikube service mongoexpress-service` in our example to access it from the browser. This creates a tunnel between localhost and the node (the virtual node which minikube has created, because the external IP assigned to the service is of the node, so we need this tunnelling). In other cases, when the cluster is on the cloud, we'll get an actual external IP and this tunnel won't be required.
