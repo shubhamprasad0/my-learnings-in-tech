@@ -226,3 +226,19 @@ spec:
 - [Example Ingress](/kubernetes/03-dashboard-ingress.yaml)
 - Ingress is just a configuration of the routing rules. We need another component called an Ingress Controller to take care of the actual routing. There are many third-party implementations like K8s Nginx Ingress Controller, istio ingress, etc.
 - For minikube, install ingress controller with `minikube addons enable ingress`
+
+## Helm
+1. Helm is a package manager for kubernetes, as well as a templating engine.
+2. It helps in defining templates for configuration files, which can be used to generate separate valid configuration files for k8s.
+3. It also bundles the configuration files, which can then be shared with others.
+4. For example, if you want to deploy the ELK stack, with only kubernetes, you need to write all the configuration files and then deploy all the components. But, it is such a common task that everyone needs it. So, helm allows to bundle the configuration files and share them. We can download the chart from a [helm repository](https://artifacthub.io/) and install them in our kubernetes cluster.
+5. Structure of helm chart:-
+   ```
+   my-chart/
+   | - values.yaml
+   | - charts/
+   | - templates/
+   | - ...
+   ```
+6. `values.yaml` file contains all the settings which can be injected into templates. So, we can have values file for different environments (dev, staging, prod) and a single template with different values files can be used to deploy the application on different environments.
+7. [Learn More](https://helm.sh/)
