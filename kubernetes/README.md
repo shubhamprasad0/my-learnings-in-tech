@@ -127,7 +127,7 @@
   1. metadata
   2. spec
   3. status
-- Every configuration file defines an apiVersion and a Kind, which is specific to each component and needs to be looked up in docs.
+- Every configuration file defines an apiVersion and a Kind, which is specific to each component and needs to be looked up in docs (can also check with command `kubectl api-resources`)
 - metadata defines the name, labels, etc. of the component.
 - spec defines the desired state of the component and differs for each component.
 - status is added automatically by kubernetes when the component is created, and is automatically updated to keep track of the current status.
@@ -177,3 +177,43 @@ spec:
   - We create a deployment, `mongoexpress-deployment`, which deploys the mongo-express pods.
   - We create a configmap, `mongoexpress-config`, which holds the mongodb url, to which mongo-express will connect. This configmap is also referenced in the mongoexpress-deployment configuration file.
   - We create an external service (a service of type LoadBalancer), `mongoexpress-service`. This service is assigned a node IP address and a node port, through which this service can be accessed from outside the kubernetes cluster. Since minikube works a bit differently, we have to run `minikube service mongoexpress-service` in our example to access it from the browser. This creates a tunnel between localhost and the node (the virtual node which minikube has created, because the external IP assigned to the service is of the node, so we need this tunnelling). In other cases, when the cluster is on the cloud, we'll get an actual external IP and this tunnel won't be required.
+
+  ## Namespaces
+
+  - A namespace is an isolated environment within a cluster; it is like a virtual cluster within a cluster.
+  - Components in one namespace are usually isolated from those in another namespace.
+  
+  ### Why use namespaces?
+  1. Better organization of components, like databases in one namespace, API services in another, nginx, ingress in another, etc.
+  2. Creating different environments like staging, production, etc.
+  3. Can be used to share common components like monitoring, etc. across different environments.
+  4. Can be used to control access and resource quotas for each namespace, so that different teams can work without affecting each other's work.
+
+  ### Some characteristics of namespaces
+  1. Not every component can be accessed from other namespaces. E.g. ConfigMap, Secret cannot be accessed across namespaces. These need to be created in each namespace when needed.
+  2. Some components can be accessed from other namespaces, which allows sharing those components across namespaces. For example, Service can be accessed from other namespaces using the format: `<service_name>.<namespace_name>`, like `mongodb.qa-ns`
+  3. Some components are not namespaced, and can only live outside a namespace. For e.g. Node
+  4. `kubect api-resources --namespaced=true` -- returns list of resources which are namespaced. Use `--namespaced=false` to get the list of resources which are not namespaced.
+
+  ### Create and use namespaces
+  1. Create using kubectl -- `kubectl create namespace <name>`. E.g. `kubectl create namespace my-namespace`
+  2. Use through kubectl -- append `-n <namespace_name>` to the end of kubectl command to specify the namespace. E.g. `kubectl get pods -n my-namespace` will show the pods in `my-namespace`.
+  3. Specifying namespace is better in configuration file. It is added in the metadata section.
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: nginx-deployment
+      namespace: my-namespace
+    ... 
+    ```
+  4. If you work only in a specific namespace all the time, it is better to change the active namespace. Can use `kubens` tool for this.
+
+  ### 4 default namespaces
+  ```shell
+  NAME              STATUS   AGE
+  default           Active   7h47m
+  kube-node-lease   Active   7h47m
+  kube-public       Active   7h47m
+  kube-system       Active   7h47m
+  ```
