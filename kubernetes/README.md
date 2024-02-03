@@ -217,3 +217,12 @@ spec:
   kube-public       Active   7h47m
   kube-system       Active   7h47m
   ```
+
+## Ingress
+
+- Used to route external traffic into the k8s cluster.
+- Instead of using an external service (of Type: LoadBalancer), we usually use Ingress.
+- With Ingress, we can define rules mapping hosts and paths to different services and ports
+- [Example Ingress](/kubernetes/03-dashboard-ingress.yaml)
+- Ingress is just a configuration of the routing rules. We need another component called an Ingress Controller to take care of the actual routing. There are many third-party implementations like K8s Nginx Ingress Controller, istio ingress, etc.
+- For minikube, install ingress controller with `minikube addons enable ingress`
