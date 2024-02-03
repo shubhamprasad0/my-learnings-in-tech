@@ -242,3 +242,31 @@ spec:
    ```
 6. `values.yaml` file contains all the settings which can be injected into templates. So, we can have values file for different environments (dev, staging, prod) and a single template with different values files can be used to deploy the application on different environments.
 7. [Learn More](https://helm.sh/)
+
+## Volumes
+
+1. Volumes are used in kubernetes to provide persistent storage for applications. Otherwise, when a pod restarts, all the data it had stored earlier gets lost.
+2. There are 3 components associated with volumes:-
+   - Persistent Volume
+   - Persistent Volume Claim
+   - Storage Class
+3. Persistent Volume is an abstraction over different types of storages available (FileSystem, NFS, Cloud Storage, etc.)
+4. An application requests volume using a Persistent Volume Claim, which is satisfied by an existing Persistent Volume.
+5. But, creating and managing the underlying actual storage is an addtional task which has to be done by the kubernetes cluster admin.
+6. So, to automate the provisioning of storage, Storage Class is used. It defines the provisioner (where to provision the storage like AWS, etc.). When a pod requests a volume using a Persistent Volume Claim, the associated Storage Class provisions storage and creates a Persistent Volume, which is then made available to the pod for use.
+
+## Stateful Set
+
+1. Used to deploy stateful applications (like databases)
+2. It is tricky to setup
+3. Each pod inside a stateful set gets a unique identity which is maintained
+4. Each pod also gets a unique DNS entry
+5. Pods are started in order, one after another. They are killed in the reverse order, again sequentially.
+
+## Services
+
+- 4 types:-
+  - ClusterIP (default) -- internal service, not accessible outside the cluster; most commonly used type
+  - Headless (ClusterIP with clusterIP: None) -- used to access specific pods
+  - NodePort -- opens a port on all nodes, to which external requests can come; not secure, should't be used in production
+  - LoadBalancer -- opens a port on the node, to which only load balancer of cloud provider can connect.
